@@ -64,6 +64,130 @@ body,
   padding: 3rem 3rem;
 }
 
+.admin-simple-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  border: 0;
+}
+
+.admin-simple-editor .blog-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.admin-simple-editor .blog-column {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 24px 28px 96px;
+}
+
+.admin-simple-editor .simple-editor-content {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+}
+
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror {
+  min-height: 22rem;
+  padding: 1rem 1rem 2rem;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: inherit;
+  cursor: text;
+}
+
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror p,
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror li {
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: inherit;
+}
+
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror h1,
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror h2,
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror h3 {
+  color: inherit;
+}
+
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror:focus {
+  outline: none;
+}
+
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror p.is-editor-empty:first-child::before,
+.admin-simple-editor .simple-editor-content .tiptap.ProseMirror p.is-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: #a3a3a3;
+}
+
+.article-write-label {
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
+  color: #737373;
+}
+
+.article-write-box {
+  overflow: hidden;
+  border: 1px solid #d4d4d4;
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: text;
+}
+
+.dark .article-write-box {
+  border-color: #404040;
+  background: #171717;
+}
+
+.article-write-box:focus-within {
+  border-color: #737373;
+}
+
+.blog-image {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.blog-image img {
+  display: block;
+  width: 100%;
+  max-height: 28rem;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.blog-image-delete {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border-radius: 0.5rem;
+  background: #111;
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.blog-image:hover .blog-image-delete,
+.blog-image[data-selected="true"] .blog-image-delete {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (pointer: coarse) {
+  .blog-image-delete {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
 @media screen and (max-width: 480px) {
   .simple-editor-content .tiptap.ProseMirror {
     padding: 1rem 1.5rem;

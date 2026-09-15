@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Assessment from "@/app/models/Assessment";
 import { questions } from "@/lib/assessment";
+import { createAssessment } from "@/lib/assessments";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    await dbConnect();
-
     const body = await req.json();
     const { answers, companyName, contactName, email } = body;
 
@@ -17,9 +16,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ------------------------------
-    // 1. SCORE CALCULATION
-    // ------------------------------
     let totalScore = 0;
 
     for (const q of questions) {
@@ -29,18 +25,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // ------------------------------
-    // 2. DETERMINE MATURITY LEVEL (ENGLISH VERSION)
-    // ------------------------------
     let maturityLevel = "Starter";
 
     if (totalScore >= 65) maturityLevel = "Leader";
     else if (totalScore >= 40) maturityLevel = "Optimizer";
     else maturityLevel = "Starter";
 
-    // ------------------------------
-    // 3. GPT PROMPT
-    // ------------------------------
     const prompt = `
 Tu es un expert RH du Québec spécialisé en transformation numérique.
 
@@ -58,9 +48,6 @@ Analyse en français :
 Ton professionnel adapté aux PME québécoises.
     `.trim();
 
-    // ------------------------------
-    // 4. AI GENERATION
-    // ------------------------------
     let aiAnalysis = "Analyse IA non générée (clé OpenRouter manquante).";
 
     if (process.env.OPENROUTER_API_KEY) {
@@ -90,10 +77,7 @@ Ton professionnel adapté aux PME québécoises.
       }
     }
 
-    // ------------------------------
-    // 5. SAVE INTO MONGODB
-    // ------------------------------
-    const saved = await Assessment.create({
+    const saved = await createAssessment({
       companyName,
       contactName,
       email,
@@ -103,12 +87,9 @@ Ton professionnel adapté aux PME québécoises.
       aiAnalysis,
     });
 
-    // ------------------------------
-    // 6. RETURN EXACT SHAPE EXPECTED BY UI
-    // ------------------------------
     return NextResponse.json({
       assessment: {
-        _id: saved._id.toString(),
+        _id: saved._id,
         email: saved.email,
         contactName: saved.contactName,
         companyName: saved.companyName,

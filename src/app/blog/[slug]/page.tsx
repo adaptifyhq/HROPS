@@ -1,13 +1,14 @@
-import dbConnect from "@/lib/mongodb";
-import BlogModel from "@/app/models/Blog";
 import { notFound } from "next/navigation";
+import { findBlogById } from "@/lib/blogs";
 import { BlogContentWithToc } from "./BlogContentWithToc";
 
-export default async function BlogPage(props: any) {
-  const { slug } = props.params;
+export const dynamic = "force-dynamic";
 
-  await dbConnect();
-  const blog = await BlogModel.findById(slug).lean();
+export default async function BlogPage(props: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await props.params;
+  const blog = await findBlogById(slug);
 
   if (!blog) return notFound();
 

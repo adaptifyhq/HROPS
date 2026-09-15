@@ -1,31 +1,18 @@
 "use client";
-import { cn } from "@/lib/utils";
-import Link, { LinkProps } from "next/link";
-import React, { useState, useEffect } from "react";
-import { AnimatePresence } from "motion/react";
-import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
-import { Logo, LogoIcon } from "@/components/global/Logo";
-import {
-  Sidebar,
-  SidebarBody,
-  DesktopSidebar,
-  MobileSidebar,
-  SidebarLink,
-} from "@/components/layouts/SidebarLayout";
 
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import {
-  IconHome,
-  IconArticle,
-  IconWorldWww,
-  IconMenu2,
-  IconX,
-  IconLogout,
-  IconSun,
-  IconMoon,
+  IconCalendarMonth,
   IconChecklist,
+  IconClockHour4,
+  IconFileText,
+  IconPencil,
+  IconSearch,
+  IconTrash,
 } from "@tabler/icons-react";
-
+import { toast } from "sonner";
+import { AdminShell } from "@/components/admin/AdminShell";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,40 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import Image from "next/image";
-import { motion, HTMLMotionProps } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-
-export default function AdminHome() {
-  return (
-    <div className="h-screen w-full flex">
-      <SidebarLayout>
-        <Dashboard />
-      </SidebarLayout>
-    </div>
-  );
-}
-
-
-
-
-interface Links {
-  label: string;
-  href?: string;
-  icon: React.JSX.Element | React.ReactNode;
-  onClick?: () => void;
-}
-
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableColumn,
-  TableRow,
-  TableCell,
-  getKeyValue,
-} from "@heroui/table";
+import { cn } from "@/lib/utils";
 
 export interface Blog {
   _id: string;
@@ -78,360 +32,335 @@ export interface Blog {
   author: string;
   content: string;
   description: string;
+  thumbnail?: string;
   imageBase64?: string;
   createdAt: string;
 }
 
+const dateFormatter = new Intl.DateTimeFormat("fr-CA", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
 
+function formatDate(value?: string) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return dateFormatter.format(date);
+}
 
-export function SidebarLayout({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const { setTheme, theme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const primaryLinks = (
-    [
-      {
-        label: "Home",
-        href: "/admin",
-        icon: (
-          <IconHome className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />
-        ),
-      },
-      {
-        label: "Blogs",
-        href: "/blog",
-        icon: (
-          <IconArticle className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />
-        ),
-      },
-      {
-        label: "Website",
-        href: "/",
-        icon: (
-          <IconWorldWww className="h-5 w-5 text-neutral-700 dark:text-neutral-200" />
-        ),
-      },
-      
-      mounted && {
-        label: theme === "dark" ? "Light Mode" : "Dark Mode",
-        href: "#",
-        icon:
-          theme === "dark" ? (
-            <IconSun className="h-5 w-5 text-yellow-500" />
-          ) : (
-            <IconMoon className="h-5 w-5 text-neutral-700" />
-          ),
-        onClick: () => setTheme(theme === "dark" ? "light" : "dark"),
-      },
-    ] as (Links | false)[]
-  ).filter(Boolean) as Links[];
-
+export default function AdminHome() {
   return (
-    <div
-      className={cn(
-        "flex w-full min-h-screen flex-col md:flex-row overflow-hidden bg-white dark:bg-neutral-800",
-        className
-      )}
-    >
-      <Sidebar>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-            <Logo />
-            <div className="mt-8 flex flex-col">
-              {primaryLinks.map((link, idx) => (
-                <SidebarLink key={idx} link={link} id={`primary-link-${idx}`} />
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <div className="h-px w-full bg-neutral-200 dark:bg-neutral-800" />
-              <div className="h-px w-full bg-neutral-100 dark:bg-neutral-800" />
-            </div>
-          </div>
-
-          {/* ✅ User avatar */}
-          <div className="flex flex-col gap-2">
-            <SidebarLink
-              link={{
-                label: "Faycal Khadad",
-                href: "#",
-                icon: (
-                  <Image
-                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/340px-Default_pfp.svg.png"
-                    className="h-7 w-7 flex-shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
-
-            {/* 🔴 LOGOUT BUTTON FIXED HERE */}
-            <button
-              onClick={() => {
-                localStorage.removeItem("admin-auth");
-                window.location.href = "/admin/login";
-              }}
-              className="flex items-center gap-2 rounded-md bg-red-600 px-3 py-2 text-sm text-white transition hover:bg-red-700"
-            >
-              <IconLogout className="h-5 w-5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </SidebarBody>
-      </Sidebar>
-
-      {children as React.ReactNode}
-    </div>
+    <AdminShell>
+      <Dashboard />
+    </AdminShell>
   );
 }
 
-const columns = [
-  { key: "title", label: "Title" },
-  { key: "author", label: "Author" },
-  { key: "description", label: "Description" },
-  { key: "createdAt", label: "Created" },
-];
-
-const Dashboard = () => {
+function Dashboard() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [assessmentCount, setAssessmentCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    fetch("/api/blogs")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Fetched blogs:", data); // <-- ✅ Check if `description` exists
-        setBlogs(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to load blogs", err);
-        setLoading(false);
-      });
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const [blogsRes, assessmentsRes] = await Promise.all([
+          fetch("/api/blogs"),
+          fetch("/api/admin/assessments"),
+        ]);
+        const blogsData = await blogsRes.json();
+        const assessmentsData = await assessmentsRes.json();
+        if (cancelled) return;
+
+        setBlogs(Array.isArray(blogsData) ? blogsData : []);
+        setAssessmentCount(
+          Array.isArray(assessmentsData?.assessments)
+            ? assessmentsData.assessments.length
+            : 0
+        );
+      } catch (err) {
+        console.error("Failed to load dashboard", err);
+        toast.error("Chargement impossible", {
+          description: "Les données du tableau de bord n’ont pas pu être récupérées.",
+        });
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading)
-    return (
-      <div className="flex-1 px-4 py-6 bg-white text-black dark:bg-black dark:text-white w-full">
-        <div className="flex items-center justify-between mb-6">
-          <div className="h-10 w-40 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-          <div className="h-10 w-28 animate-pulse rounded-md bg-neutral-200 dark:bg-neutral-800" />
-        </div>
+  const stats = useMemo(() => {
+    const now = new Date();
+    const thisMonth = blogs.filter((blog) => {
+      const created = new Date(blog.createdAt);
+      return (
+        created.getMonth() === now.getMonth() &&
+        created.getFullYear() === now.getFullYear()
+      );
+    }).length;
+    const latest = blogs[0]?.createdAt;
 
-        <div className="rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 overflow-hidden">
-          <div className="grid grid-cols-4 gap-4 p-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-6 w-full animate-pulse rounded bg-neutral-200 dark:bg-neutral-800"
-              />
-            ))}
-          </div>
+    return [
+      {
+        label: "Articles publiés",
+        value: String(blogs.length),
+        hint: blogs.length === 0 ? "Bibliothèque vide" : "Sur le blog HROps",
+        icon: IconFileText,
+      },
+      {
+        label: "Ce mois-ci",
+        value: String(thisMonth),
+        hint: thisMonth === 0 ? "Aucun nouvel article" : "Publications du mois",
+        icon: IconCalendarMonth,
+      },
+      {
+        label: "Diagnostics RH",
+        value: String(assessmentCount),
+        hint:
+          assessmentCount === 0
+            ? "Aucun diagnostic reçu"
+            : "Leads enregistrés",
+        icon: IconChecklist,
+      },
+      {
+        label: "Dernière publication",
+        value: latest ? formatDate(latest) : "—",
+        hint: latest ? "Article le plus récent" : "En attente du premier texte",
+        icon: IconClockHour4,
+        compact: Boolean(latest),
+      },
+    ];
+  }, [assessmentCount, blogs]);
 
-          <div className="space-y-3 p-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 animate-pulse">
-                <div className="h-4 w-1/4 rounded bg-neutral-200 dark:bg-neutral-800" />
-                <div className="h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800" />
-                <div className="h-4 w-1/5 rounded bg-neutral-200 dark:bg-neutral-800" />
-                <div className="h-4 w-20 rounded bg-neutral-300 dark:bg-neutral-700" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+  const filteredBlogs = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return blogs;
+    return blogs.filter((blog) =>
+      [blog.title, blog.description, blog.author]
+        .join(" ")
+        .toLowerCase()
+        .includes(needle)
     );
+  }, [blogs, query]);
+
+  async function deleteBlog(id: string) {
+    try {
+      const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("delete failed");
+      setBlogs((prev) => prev.filter((blog) => blog._id !== id));
+      toast.success("Article supprimé", {
+        description: "L’article a bien été retiré du blog.",
+      });
+    } catch {
+      toast.error("Suppression impossible", {
+        description: "Une erreur est survenue. Réessayez dans un instant.",
+      });
+    }
+  }
 
   return (
-    <div className="flex-1 px-4 py-6 bg-white text-black dark:bg-neutral-950 dark:text-white w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold">Blog Dashboard</h1>
-        <Link
-          href="/admin/blogs/create"
-          className="px-4 py-2 bg-black text-white text-sm font-medium rounded-md shadow hover:bg-neutral-900 transition dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-        >
-          Create Blog
-        </Link>
-      </div>
-
-      {!blogs.length ? (
-        <div className="p-6 text-neutral-500 dark:text-white">
-          No blogs found.
-        </div>
-      ) : (
-        <>
-          <div className="rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 overflow-x-auto">
-            <Table
-              isStriped
-              removeWrapper
-              aria-label="Blog Dashboard Table"
-              className="min-w-[800px]"
-            >
-              <TableHeader
-                columns={[
-                  { key: "title", label: "Title" },
-                  { key: "description", label: "Description" },
-                  { key: "createdAt", label: "Created" },
-                  { key: "actions", label: "Actions" },
-                ]}
-              >
-                {(column) => (
-                  <TableColumn
-                    key={column.key}
-                    className="text-sm text-neutral-700 dark:text-neutral-300"
-                  >
-                    {column.label}
-                  </TableColumn>
-                )}
-              </TableHeader>
-
-              <TableBody items={blogs}>
-                {(item) => (
-                  <TableRow key={item._id}>
-                    {(columnKey) => {
-                      if (columnKey === "title") {
-                        return (
-                          <TableCell>
-                            <Link
-                              href={`/admin/blogs/${item._id}/edit`}
-                              className="inline-block bg-black text-white text-xs font-medium px-3 py-1 rounded-md hover:bg-neutral-900 transition dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                            >
-                              {item.title}
-                            </Link>
-                          </TableCell>
-                        );
-                      }
-
-                      if (columnKey === "createdAt") {
-                        return (
-                          <TableCell className="text-sm">
-                            {item.createdAt
-                              ? new Date(item.createdAt).toLocaleDateString()
-                              : "—"}
-                          </TableCell>
-                        );
-                      }
-
-                      if (columnKey === "actions") {
-                        return (
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Link
-                                href={`/admin/blogs/${item._id}/edit`}
-                                className="bg-black text-white text-xs px-3 py-1 rounded-md hover:bg-neutral-900 transition dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                              >
-                                Edit
-                              </Link>
-
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="destructive"
-                                    className="text-xs px-3 py-1 h-auto"
-                                  >
-                                    Delete
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-white dark:bg-neutral-950 border border-neutral-300 dark:border-neutral-800">
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle className="text-black dark:text-white">
-                                      Are you absolutely sure?
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription className="text-neutral-700 dark:text-neutral-400">
-                                      This action cannot be undone. This will
-                                      permanently delete this blog post.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel className="bg-black text-white hover:bg-neutral-900 dark:bg-white dark:text-black dark:hover:bg-neutral-200">
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      className="bg-red-600 text-white hover:bg-red-700"
-                                      onClick={async () => {
-                                        try {
-                                          const res = await fetch(
-                                            `/api/blogs/${item._id}`,
-                                            {
-                                              method: "DELETE",
-                                            }
-                                          );
-
-                                          if (res.ok) {
-                                            setBlogs((prev) =>
-                                              prev.filter(
-                                                (b) => b._id !== item._id
-                                              )
-                                            );
-                                            toast.success("Blog deleted", {
-                                              description:
-                                                "The blog was successfully removed.",
-                                            });
-                                          } else {
-                                            toast.error("Failed to delete", {
-                                              description:
-                                                "An error occurred while deleting the blog.",
-                                            });
-                                          }
-                                        } catch (err) {
-                                          console.error(err);
-                                          toast.error("Server error", {
-                                            description:
-                                              "Something went wrong.",
-                                          });
-                                        }
-                                      }}
-                                    >
-                                      Yes, delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </div>
-                          </TableCell>
-                        );
-                      }
-
-                      return (
-                        <TableCell
-                          className={cn(
-                            "text-sm text-neutral-800 dark:text-neutral-100",
-                            columnKey === "description" &&
-                              "max-w-[200px] truncate"
-                          )}
-                        >
-                          {columnKey === "description"
-                            ? item.description || "—"
-                            : (item as any)[columnKey] || "—"}
-                        </TableCell>
-                      );
-                    }}
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+    <main className="flex-1 overflow-y-auto bg-white px-4 py-6 dark:bg-neutral-950 md:px-8 md:py-8">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">Articles</h1>
+            <p className="mt-1 text-sm text-neutral-500">
+              Rédigez et publiez les articles du blog.
+            </p>
           </div>
+          <Link
+            href="/admin/blogs/create"
+            className="inline-flex items-center justify-center rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
+          >
+            Nouvel article
+          </Link>
+        </header>
 
-          <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-400">
-            Total blogs: {blogs.length}
-          </p>
-        </>
-      )}
+        {loading ? (
+          <DashboardSkeleton />
+        ) : (
+          <>
+            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {stats.map((stat) => (
+                <article
+                  key={stat.label}
+                  className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs text-neutral-500">{stat.label}</p>
+                      <p
+                        className={cn(
+                          "mt-2 font-semibold",
+                          stat.compact ? "text-base" : "text-2xl"
+                        )}
+                      >
+                        {stat.value}
+                      </p>
+                    </div>
+                    <stat.icon className="h-5 w-5 text-neutral-400" />
+                  </div>
+                  <p className="mt-2 text-sm text-neutral-500">{stat.hint}</p>
+                </article>
+              ))}
+            </section>
+
+            {!blogs.length ? (
+              <EmptyBlogState />
+            ) : (
+              <section className="space-y-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold">Articles</h2>
+                    <p className="text-sm text-neutral-500">
+                      {filteredBlogs.length} résultat
+                      {filteredBlogs.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <label className="relative w-full sm:max-w-xs">
+                    <IconSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                    <input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Rechercher un article…"
+                      className="w-full rounded-full border border-neutral-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none ring-orange-500/30 placeholder:text-neutral-400 focus:ring-2 dark:border-white/10 dark:bg-white/5"
+                    />
+                  </label>
+                </div>
+
+                {filteredBlogs.length === 0 ? (
+                  <div className="rounded-3xl border border-dashed border-neutral-300 px-6 py-16 text-center dark:border-white/15">
+                    <p className="text-base font-medium">Aucun résultat</p>
+                    <p className="mt-2 text-sm text-neutral-500">
+                      Aucun article ne correspond à « {query} ».
+                    </p>
+                  </div>
+                ) : (
+                  <ul className="space-y-3">
+                    {filteredBlogs.map((blog) => (
+                      <li
+                        key={blog._id}
+                        className="group flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900 sm:flex-row sm:items-center"
+                      >
+                        <div className="h-24 w-full overflow-hidden rounded-2xl bg-neutral-100 dark:bg-white/10 sm:h-20 sm:w-28">
+                          {blog.thumbnail || blog.imageBase64 ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={blog.thumbnail || blog.imageBase64}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-orange-400">
+                              <IconFileText className="h-6 w-6" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-semibold">
+                            {blog.title}
+                          </p>
+                          <p className="mt-1 line-clamp-2 text-sm text-neutral-500">
+                            {blog.description || "Aucune description"}
+                          </p>
+                          <p className="mt-2 text-xs text-neutral-400">
+                            {blog.author || "Auteur inconnu"} ·{" "}
+                            {formatDate(blog.createdAt)}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <Link
+                            href={`/admin/blogs/${blog._id}/edit`}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 px-3 py-1.5 text-xs font-medium transition hover:border-orange-300 hover:text-orange-600 dark:border-white/15"
+                          >
+                            <IconPencil className="h-3.5 w-3.5" />
+                            Modifier
+                          </Link>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-600 hover:text-white dark:border-red-500/30"
+                              >
+                                <IconTrash className="h-3.5 w-3.5" />
+                                Supprimer
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="border-neutral-200 bg-white dark:border-white/10 dark:bg-neutral-950">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Supprimer cet article ?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Cette action est définitive. « {blog.title} »
+                                  sera retiré du blog et ne pourra pas être
+                                  récupéré.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                  onClick={() => deleteBlog(blog._id)}
+                                >
+                                  Oui, supprimer
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
+
+function EmptyBlogState() {
+  return (
+    <section className="rounded-xl border border-neutral-200 px-6 py-16 text-center dark:border-neutral-800">
+      <p className="text-base font-medium">Aucun article</p>
+      <p className="mt-2 text-sm text-neutral-500">
+        Créez le premier pour l’afficher sur le blog.
+      </p>
+      <Link
+        href="/admin/blogs/create"
+        className="mt-6 inline-flex rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-black"
+      >
+        Écrire un article
+      </Link>
+    </section>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="h-32 animate-pulse rounded-3xl bg-white/70 dark:bg-white/5"
+          />
+        ))}
+      </div>
+      <div className="h-80 animate-pulse rounded-[32px] bg-white/70 dark:bg-white/5" />
     </div>
   );
-};
-
-
-
+}

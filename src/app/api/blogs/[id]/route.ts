@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Blog from "@/app/models/Blog";
+import {
+  deleteBlogById,
+  findBlogById,
+  updateBlogById,
+} from "@/lib/blogs";
 
-// ✅ GET
-export async function GET(req: NextRequest, { params }: any) {
-  await dbConnect();
+export const dynamic = "force-dynamic";
 
+type RouteContext = { params: Promise<{ id: string }> };
+
+export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
-    const blog = await Blog.findById(params.id);
+    const { id } = await params;
+    const blog = await findBlogById(id);
     if (!blog) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
@@ -18,12 +23,10 @@ export async function GET(req: NextRequest, { params }: any) {
   }
 }
 
-// ✅ DELETE
-export async function DELETE(req: NextRequest, { params }: any) {
-  await dbConnect();
-
+export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   try {
-    const deleted = await Blog.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const deleted = await deleteBlogById(id);
     if (!deleted) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });
     }
@@ -34,11 +37,9 @@ export async function DELETE(req: NextRequest, { params }: any) {
   }
 }
 
-// ✅ PUT
-export async function PUT(req: NextRequest, { params }: any) {
-  await dbConnect();
-
+export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const formData = await req.formData();
     const title = formData.get("title") as string;
     const author = formData.get("author") as string;
@@ -46,32 +47,31 @@ export async function PUT(req: NextRequest, { params }: any) {
     const content = formData.get("content") as string;
     const file = formData.get("image") as File | null;
     const tocRaw = formData.get("toc") as string;
+    const removeCover = formData.get("removeCover") === "true";
 
     let toc: string[] = [];
     try {
       toc = JSON.parse(tocRaw);
-    } catch (err) {
+    } catch {
       console.warn("Invalid TOC JSON:", tocRaw);
     }
 
-    let imageBase64: string | undefined;
-    if (file && typeof file === "object") {
+    let thumbnail: string | undefined;
+    if (removeCover) {
+      thumbnail = "";
+    } else if (file && typeof file === "object" && file.size > 0) {
       const buffer = Buffer.from(await file.arrayBuffer());
-      imageBase64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+      thumbnail = `data:${file.type};base64,${buffer.toString("base64")}`;
     }
 
-    const updated = await Blog.findByIdAndUpdate(
-      params.id,
-      {
-        title,
-        author,
-        description,
-        content,
-        toc,
-        ...(imageBase64 && { imageBase64 }),
-      },
-      { new: true }
-    );
+    const updated = await updateBlogById(id, {
+      title,
+      author,
+      description,
+      content,
+      toc,
+      thumbnail,
+    });
 
     if (!updated) {
       return NextResponse.json({ error: "Blog not found" }, { status: 404 });

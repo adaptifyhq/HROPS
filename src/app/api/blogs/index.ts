@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server"
-import connectDB from "@/lib/mongodb";
-import Blog from "@/app/models/Blog"
+import { NextResponse } from "next/server";
+import { listBlogs } from "@/lib/blogs";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await connectDB()
-    const blogs = await Blog.find().sort({ createdAt: -1 })
-    return NextResponse.json(blogs)
-  } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch blogs" }, { status: 500 })
+    const blogs = await listBlogs();
+    return NextResponse.json(blogs);
+  } catch {
+    return NextResponse.json({ error: "Failed to fetch blogs" }, { status: 500 });
   }
 }

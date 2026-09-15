@@ -1,20 +1,18 @@
 import { NextResponse } from "next/server";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
-import dbConnect from "@/lib/mongodb";
-import Assessment from "@/app/models/Assessment";
+import { findAssessmentById } from "@/lib/assessments";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    await dbConnect();
-
     const { assessmentId } = await req.json();
     if (!assessmentId)
       return NextResponse.json({ error: "Missing assessmentId" }, { status: 400 });
 
-    const assessment = await Assessment.findById(assessmentId).lean();
+    const assessment = await findAssessmentById(assessmentId);
     if (!assessment)
       return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
 
@@ -52,10 +50,11 @@ export async function POST(req: Request) {
         "Content-Disposition": 'attachment; filename="Diagnostic_HROps.pdf"',
       },
     });
-  } catch (error: any) {
-    console.error("❌ PDF generation error:", error);
+  } catch (error: unknown) {
+    console.error("PDF generation error:", error);
+    const message = error instanceof Error ? error.message : undefined;
     return NextResponse.json(
-      { error: "Internal PDF generation error", details: error?.message },
+      { error: "Internal PDF generation error", details: message },
       { status: 500 }
     );
   }

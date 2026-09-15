@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import Assessment from "@/app/models/Assessment";
-import dbConnect from "@/lib/mongodb";
+import { findAssessmentById } from "@/lib/assessments";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
-    await dbConnect();
-
     const { assessmentId, pdfBase64 } = await req.json();
 
     if (!assessmentId || !pdfBase64) {
@@ -18,7 +17,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const assessment = await Assessment.findById(assessmentId);
+    const assessment = await findAssessmentById(assessmentId);
 
     if (!assessment) {
       return NextResponse.json(
@@ -29,9 +28,6 @@ export async function POST(req: Request) {
 
     const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
-    // ------------------------------------
-    // EMAIL 1 — Send PDF to Client
-    // ------------------------------------
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: assessment.email,
@@ -51,9 +47,6 @@ export async function POST(req: Request) {
       ],
     });
 
-    // ------------------------------------
-    // EMAIL 2 — Notify Admin (Fayçal)
-    // ------------------------------------
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: process.env.EMAIL_TO_ADMIN!,

@@ -1,9 +1,10 @@
 import * as React from "react"
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
+import { EditorContent, EditorContext, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
 import { Image } from "@tiptap/extension-image"
+import { BlogImageView } from "@/components/tiptap/blog-image-view"
 import { TaskItem } from "@tiptap/extension-task-item"
 import { TaskList } from "@tiptap/extension-task-list"
 import { TextAlign } from "@tiptap/extension-text-align"
@@ -12,6 +13,7 @@ import { Highlight } from "@tiptap/extension-highlight"
 import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { Underline } from "@tiptap/extension-underline"
+import Placeholder from "@tiptap/extension-placeholder"
 
 // --- Custom Extensions ---
 import { Link } from "@/components/tiptap/tiptap-extension/link-extension"
@@ -177,9 +179,10 @@ const MobileToolbarContent = ({
 type SimpleEditorProps = {
   content: string;
   onChange: (value: string) => void;
+  header?: React.ReactNode;
 };
 
-export function SimpleEditor({ content, onChange }: SimpleEditorProps) {
+export function SimpleEditor({ content, onChange, header }: SimpleEditorProps) {
   const isMobile = useMobile()
   const windowSize = useWindowSize()
   const [mobileView, setMobileView] = React.useState<
@@ -194,7 +197,7 @@ export function SimpleEditor({ content, onChange }: SimpleEditorProps) {
         autocomplete: "off",
         autocorrect: "off",
         autocapitalize: "off",
-        "aria-label": "Main content area, start typing to enter text.",
+        "aria-label": "Zone de rédaction",
       },
     },
     extensions: [
@@ -204,7 +207,11 @@ export function SimpleEditor({ content, onChange }: SimpleEditorProps) {
       TaskList,
       TaskItem.configure({ nested: true }),
       Highlight.configure({ multicolor: true }),
-      Image,
+      Image.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(BlogImageView);
+        },
+      }),
       Typography,
       Superscript,
       Subscript,
@@ -219,6 +226,9 @@ export function SimpleEditor({ content, onChange }: SimpleEditorProps) {
       }),
       TrailingNode,
       Link.configure({ openOnClick: false }),
+      Placeholder.configure({
+        placeholder: "Cliquez ici et écrivez votre article…",
+      }),
     ],
     content: content,
   })
@@ -243,37 +253,48 @@ export function SimpleEditor({ content, onChange }: SimpleEditorProps) {
 
   return (
   <EditorContext.Provider value={{ editor }}>
-    <div className="tiptap-theme-dark rounded-lg max-h-[30rem] overflow-y-auto relative border border-neutral-800">
-      <Toolbar
-        ref={toolbarRef}
-        style={
-          isMobile
-            ? {
-                bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`,
-              }
-            : {}
-        }
-      >
-        {mobileView === "main" ? (
-          <MainToolbarContent
-            onHighlighterClick={() => setMobileView("highlighter")}
-            onLinkClick={() => setMobileView("link")}
-            isMobile={isMobile}
-          />
-        ) : (
-          <MobileToolbarContent
-            type={mobileView === "highlighter" ? "highlighter" : "link"}
-            onBack={() => setMobileView("main")}
-          />
-        )}
-      </Toolbar>
-
-      <div className="content-wrapper">
-        <EditorContent
-          editor={editor}
-          role="presentation"
-          className="simple-editor-content"
-        />
+    <div className="admin-simple-editor">
+      <div className="blog-scroll">
+        <div className="blog-column">
+          {header}
+          <div className="article-write">
+            <p className="article-write-label">Article</p>
+            <div
+              className="article-write-box"
+              onClick={() => editor?.chain().focus().run()}
+            >
+              <Toolbar
+                ref={toolbarRef}
+                style={
+                  isMobile
+                    ? {
+                        bottom: `calc(100% - ${windowSize.height - bodyRect.y}px)`,
+                      }
+                    : {}
+                }
+              >
+                {mobileView === "main" ? (
+                  <MainToolbarContent
+                    onHighlighterClick={() => setMobileView("highlighter")}
+                    onLinkClick={() => setMobileView("link")}
+                    isMobile={isMobile}
+                  />
+                ) : (
+                  <MobileToolbarContent
+                    type={mobileView === "highlighter" ? "highlighter" : "link"}
+                    onBack={() => setMobileView("main")}
+                  />
+                )}
+              </Toolbar>
+              <EditorContent
+                editor={editor}
+                role="textbox"
+                aria-label="Texte de l’article"
+                className="simple-editor-content"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </EditorContext.Provider>

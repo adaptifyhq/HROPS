@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/mongodb";
-import Assessment from "@/app/models/Assessment";
+import { listAssessments } from "@/lib/assessments";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    await dbConnect();
-
-    const assessments = await Assessment.find({})
-      .sort({ createdAt: -1 })
-      .lean();
-
+    const assessments = await listAssessments();
     return NextResponse.json({ assessments });
   } catch (error) {
     console.error("Admin assessments error:", error);

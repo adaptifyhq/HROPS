@@ -1,7 +1,8 @@
 import { Metadata } from "next";
-import dbConnect from "@/lib/mongodb";
-import Assessment from "@/app/models/Assessment";
 import Image from "next/image";
+import { findAssessmentById } from "@/lib/assessments";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Diagnostic RH – Rapport PDF | HROps Consulting",
@@ -24,11 +25,8 @@ export default async function AssessmentPdfTemplate({
 }: {
   searchParams: Promise<{ assessmentId?: string }>;
 }) {
-  await dbConnect();
-
   const resolvedParams = await searchParams;
   const assessmentId = resolvedParams.assessmentId;
-
 
   if (!assessmentId)
     return (
@@ -37,9 +35,9 @@ export default async function AssessmentPdfTemplate({
       </div>
     );
 
-  const assessment = (await Assessment.findById(
+  const assessment = (await findAssessmentById(
     assessmentId
-  ).lean()) as AssessmentDoc | null;
+  )) as AssessmentDoc | null;
 
   if (!assessment)
     return (

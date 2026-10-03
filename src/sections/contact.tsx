@@ -18,7 +18,7 @@ export default function ContactFormGridWithDetails() {
           </FeatureIconContainer>
         </div>
         <h2 className="mt-9 bg-gradient-to-b from-neutral-800 to-neutral-900 bg-clip-text text-left text-xl font-bold text-transparent md:text-3xl lg:text-5xl dark:from-neutral-200 dark:to-neutral-300">
-          Contactez-nous
+          Contactez HROps Consulting Inc.
         </h2>
         <p className="mt-8 max-w-lg text-center text-base text-neutral-600 md:text-left dark:text-neutral-400">
           Pour toute question ou demande de renseignements, n’hésitez pas à nous contacter. Nous vous répondrons dans les plus brefs délais.
@@ -27,8 +27,8 @@ export default function ContactFormGridWithDetails() {
         <div className="mt-10 flex flex-col gap-3 text-sm text-neutral-500 dark:text-neutral-400">
           <p>
             <span className="font-medium text-neutral-700 dark:text-neutral-300">Email :</span>{" "}
-            <a href="mailto:contact@hropsconsulting.com" className="underline hover:text-orange-500 transition">
-              contact@hropsconsulting.com
+            <a href="mailto:contact@hrops-consulting.com" className="underline hover:text-orange-500 transition">
+              contact@hrops-consulting.com
             </a>
           </p>
           <p>
@@ -141,6 +141,16 @@ export default function ContactFormGridWithDetails() {
       className="shadow-input w-full rounded-md border border-transparent bg-white pt-4 pl-4 text-sm text-neutral-700 placeholder-neutral-500 outline-none focus:ring-2 focus:ring-neutral-800 dark:border-neutral-800 dark:bg-neutral-800 dark:text-white"
     />
   </div>
+
+  <p className="relative z-20 text-xs leading-relaxed text-neutral-600 dark:text-neutral-300">
+    En transmettant ce formulaire, vous acceptez que HROps Consulting Inc. utilise les
+    renseignements fournis afin de traiter votre demande et de communiquer avec vous à ce
+    sujet. Pour en savoir plus, consultez notre{" "}
+    <a href="/privacy" className="underline">
+      Politique de confidentialité
+    </a>
+    .
+  </p>
 
   <button
     type="submit"

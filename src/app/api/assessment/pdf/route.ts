@@ -38,7 +38,18 @@ export async function POST(req: Request) {
     const pdfBuffer = await page.pdf({
       format: "A4",
       printBackground: true,
-      margin: { top: "30px", bottom: "30px", left: "20px", right: "20px" },
+      displayHeaderFooter: true,
+      headerTemplate: `
+        <div style="font-size:8px;font-family:Helvetica,Arial,sans-serif;color:#8a8178;width:100%;padding:0 16mm;display:flex;justify-content:space-between;">
+          <span>HROps Consulting Inc.</span>
+          <span>Diagnostic de maturité digitale RH</span>
+        </div>`,
+      footerTemplate: `
+        <div style="font-size:8px;font-family:Helvetica,Arial,sans-serif;color:#8a8178;width:100%;padding:0 16mm;display:flex;justify-content:space-between;">
+          <span>Confidentiel · autoévaluation indicative</span>
+          <span><span class="pageNumber"></span> / <span class="totalPages"></span></span>
+        </div>`,
+      margin: { top: "16mm", bottom: "14mm", left: "16mm", right: "16mm" },
     });
 
     await browser.close();

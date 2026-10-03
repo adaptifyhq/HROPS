@@ -22,14 +22,14 @@ export type Theme = {
 };
 
 export const themes: Theme[] = [
-  { id: "organisation_vision", title: "Organisation & Vision RH Digitale", maxScore: 12 },
-  { id: "outils_rh", title: "Outils RH (SIRH) & Technologies", maxScore: 12 },
-  { id: "processus_rh", title: "Méthodes de Travail RH (Processus)", maxScore: 12 },
-  { id: "donnees_rh", title: "Données RH & Suivi", maxScore: 12 },
-  { id: "experience_employe", title: "Expérience Employé", maxScore: 12 },
-  { id: "competences_culture", title: "Compétences RH & Culture Numérique", maxScore: 12 },
-  { id: "securite_loi25", title: "Sécurité & Protection des Données (Loi 25)", maxScore: 12 },
-  { id: "collaboration_changement", title: "Collaboration Interne & Accompagnement au Changement", maxScore: 12 },
+  { id: "organisation_vision", title: "Stratégie & gouvernance RH digitale", maxScore: 12 },
+  { id: "outils_rh", title: "SIRH & architecture technologique", maxScore: 12 },
+  { id: "processus_rh", title: "Processus & automatisation", maxScore: 12 },
+  { id: "donnees_rh", title: "Données RH & analytique", maxScore: 12 },
+  { id: "experience_employe", title: "Expérience employé & gestionnaire", maxScore: 12 },
+  { id: "competences_culture", title: "Compétences & culture digitale", maxScore: 12 },
+  { id: "securite_loi25", title: "Sécurité, confidentialité & conformité", maxScore: 12 },
+  { id: "collaboration_changement", title: "Adoption & conduite du changement", maxScore: 12 },
 ];
 
 // -------------------------------------------------------------
@@ -391,11 +391,109 @@ export const questions: Question[] = [
 ];
 
 // -------------------------------------------------------------
-// SCORING ENGINE
+// UNSCORED CONTEXT — personalizes the reading, never the score
 // -------------------------------------------------------------
 
+export const contextQuestions = [
+  {
+    id: "organizationSize" as const,
+    label: "Taille de l'organisation",
+    question: "Quelle est la taille de votre organisation ?",
+    options: [
+      "Moins de 50 personnes",
+      "50 à 199 personnes",
+      "200 à 999 personnes",
+      "1 000 personnes et plus",
+    ],
+  },
+  {
+    id: "sector" as const,
+    label: "Secteur",
+    question: "Dans quel environnement évolue votre organisation ?",
+    options: [
+      "Municipalité ou secteur public",
+      "Organisation parapublique ou communautaire",
+      "Entreprise privée",
+      "Autre",
+    ],
+  },
+  {
+    id: "hrTeamSize" as const,
+    label: "Équipe RH",
+    question: "Quelle est la taille de votre équipe RH ?",
+    options: [
+      "1 personne ou moins",
+      "2 à 5 personnes",
+      "6 à 15 personnes",
+      "Plus de 15 personnes",
+    ],
+  },
+  {
+    id: "primarySirh" as const,
+    label: "Environnement SIRH",
+    question: "Quel est votre environnement SIRH principal ?",
+    options: [
+      "Principalement Excel, papier ou courriel",
+      "Un ou quelques logiciels RH spécialisés",
+      "Une suite SIRH intégrée",
+      "Je ne sais pas encore",
+    ],
+  },
+  {
+    id: "currentPriority" as const,
+    label: "Priorité actuelle",
+    question: "Quelle est votre priorité de transformation actuelle ?",
+    options: [
+      "Clarifier la stratégie et la gouvernance",
+      "Choisir ou faire évoluer le SIRH",
+      "Fiabiliser les processus et les données",
+      "Améliorer l'adoption des outils en place",
+    ],
+  },
+];
+
+export type ContextField = (typeof contextQuestions)[number]["id"];
+
+export type AssessmentContext = {
+  organizationSize?: string;
+  sector?: string;
+  hrTeamSize?: string;
+  primarySirh?: string;
+  currentPriority?: string;
+  marketingConsent?: boolean;
+};
+
+export type MaturityLevel = "Starter" | "Optimizer" | "Leader";
+
+export const LEVEL_NAMES: Record<1 | 2 | 3, MaturityLevel> = {
+  1: "Starter",
+  2: "Optimizer",
+  3: "Leader",
+};
+
+export function optionLevelLabel(score: number): MaturityLevel {
+  if (score >= 3) return LEVEL_NAMES[3];
+  if (score === 2) return LEVEL_NAMES[2];
+  return LEVEL_NAMES[1];
+}
+
+// -------------------------------------------------------------
+// SCORING ENGINE
+// Bands are frozen. Average = points / number of questions.
+// Starter 1.00–1.66, Optimizer 1.67–2.33, Leader 2.34–3.00.
+// On 32 questions that is 32–53, 54–74 and 75–96.
+// -------------------------------------------------------------
+
+export const CRITICAL_THEME_IDS = [
+  "donnees_rh",
+  "processus_rh",
+  "collaboration_changement",
+] as const;
+
+export const MAX_GLOBAL_SCORE = 96;
+
 export function calculateThemeScore(themeId: string, answers: Record<string, number>) {
-  const themeQuestions = questions.filter(q => q.themeId === themeId);
+  const themeQuestions = questions.filter((q) => q.themeId === themeId);
   return themeQuestions.reduce((sum, q) => sum + (answers[q.id] || 0), 0);
 }
 
@@ -403,29 +501,252 @@ export function calculateGlobalScore(answers: Record<string, number>) {
   return questions.reduce((sum, q) => sum + (answers[q.id] || 0), 0);
 }
 
-// -------------------------------------------------------------
-// MATURITY INTERPRETATION
-// -------------------------------------------------------------
-
-export function getMaturityLevel(score: number) {
-  if (score < 32) return "Débutant";
-  if (score < 64) return "En progrès";
-  return "Avancé";
-}
-
-export function getHROpsProfile(score: number) {
-  if (score < 32) return "Starter";
-  if (score < 64) return "Optimizer";
+export function levelFromAverage(average: number): MaturityLevel {
+  if (average < 1.67) return "Starter";
+  if (average < 2.34) return "Optimizer";
   return "Leader";
 }
 
-// -------------------------------------------------------------
-// EXPORT
-// -------------------------------------------------------------
+export type DimensionScore = {
+  id: string;
+  title: string;
+  score: number;
+  maxScore: number;
+  questionCount: number;
+  average: number;
+  level: MaturityLevel;
+};
+
+export function getDimensionScores(answers: Record<string, number>): DimensionScore[] {
+  return themes.map((theme) => {
+    const themeQuestions = questions.filter((q) => q.themeId === theme.id);
+    const score = calculateThemeScore(theme.id, answers);
+    const questionCount = themeQuestions.length || 1;
+    const average = score / questionCount;
+    return {
+      id: theme.id,
+      title: theme.title,
+      score,
+      maxScore: theme.maxScore,
+      questionCount,
+      average,
+      level: levelFromAverage(average),
+    };
+  });
+}
+
+export function getHROpsProfile(
+  score: number,
+  dimensions?: DimensionScore[]
+): MaturityLevel {
+  const questionCount = questions.length || 1;
+  const base = levelFromAverage(score / questionCount);
+  if (!dimensions || base !== "Leader") return base;
+
+  const criticalStarters = dimensions.filter(
+    (dimension) =>
+      (CRITICAL_THEME_IDS as readonly string[]).includes(dimension.id) &&
+      dimension.level === "Starter"
+  ).length;
+
+  return criticalStarters >= 2 ? "Optimizer" : "Leader";
+}
+
+export function getMaturityLevel(score: number, dimensions?: DimensionScore[]) {
+  return getHROpsProfile(score, dimensions);
+}
+
+export function wasLevelCapped(score: number, dimensions: DimensionScore[]) {
+  const base = levelFromAverage(score / (questions.length || 1));
+  return base === "Leader" && getHROpsProfile(score, dimensions) === "Optimizer";
+}
+
+export function formatAverage(average: number) {
+  return average.toFixed(2).replace(".", ",");
+}
+
+export function sectorVocabulary(sector?: string) {
+  const value = (sector || "").toLowerCase();
+  if (value.includes("municipal") || value.includes("public")) {
+    return "une municipalité ou une organisation du secteur public";
+  }
+  if (value.includes("parapublic") || value.includes("communaut")) {
+    return "une organisation parapublique ou communautaire";
+  }
+  if (value.includes("priv")) {
+    return "une organisation du secteur privé";
+  }
+  return "votre organisation";
+}
+
+const DIMENSION_ACTIONS: Record<
+  string,
+  { action: string; horizon: string; impact: string }
+> = {
+  organisation_vision: {
+    action:
+      "Formaliser une vision partagée de la transformation RH digitale, avec un sponsor, des priorités et un suivi.",
+    horizon: "0–6 mois",
+    impact: "élevé",
+  },
+  outils_rh: {
+    action:
+      "Clarifier la couverture du SIRH et les intégrations utiles avant d'ajouter de nouveaux outils.",
+    horizon: "3–9 mois",
+    impact: "élevé",
+  },
+  processus_rh: {
+    action:
+      "Identifier 3 à 5 processus RH répétitifs et les simplifier avant de les automatiser.",
+    horizon: "3–6 mois",
+    impact: "moyen à élevé",
+  },
+  donnees_rh: {
+    action:
+      "Consolider la qualité et la gouvernance des données RH avant d'élargir les usages analytiques ou IA.",
+    horizon: "0–3 mois",
+    impact: "élevé",
+  },
+  experience_employe: {
+    action:
+      "Simplifier l'accès aux services RH pour les employés et les gestionnaires, à partir des irritants déjà connus.",
+    horizon: "0–6 mois",
+    impact: "élevé",
+  },
+  competences_culture: {
+    action:
+      "Renforcer la capacité de l'équipe RH à utiliser les outils et les données déjà en place.",
+    horizon: "0–6 mois",
+    impact: "moyen à élevé",
+  },
+  securite_loi25: {
+    action:
+      "Revoir les accès et les pratiques de protection des renseignements RH. Ce point mérite d'être approfondi; il ne constitue pas un audit de cybersécurité.",
+    horizon: "0–3 mois",
+    impact: "élevé",
+  },
+  collaboration_changement: {
+    action:
+      "Structurer l'accompagnement des gestionnaires et mesurer l'adoption des outils déjà déployés.",
+    horizon: "0–6 mois",
+    impact: "élevé",
+  },
+};
+
+export type Priority = DimensionScore & {
+  action: string;
+  horizon: string;
+  impact: string;
+};
+
+export function selectPriorities(dimensions: DimensionScore[], count = 3): Priority[] {
+  return [...dimensions]
+    .sort((a, b) => a.average - b.average || a.score - b.score)
+    .slice(0, count)
+    .map((dimension) => ({
+      ...dimension,
+      ...(DIMENSION_ACTIONS[dimension.id] ?? {
+        action: "Approfondir cette dimension avant de lancer un nouveau chantier.",
+        horizon: "0–6 mois",
+        impact: "à préciser",
+      }),
+    }));
+}
+
+export function levelReading(level: MaturityLevel, sector?: string) {
+  const who = sectorVocabulary(sector);
+  if (level === "Leader") {
+    return `Les réponses décrivent ${who} qui dispose déjà de pratiques relativement structurées sur plusieurs dimensions. La maturité peut tout de même rester inégale. Le prochain levier consiste souvent à consolider la cohérence entre la stratégie, les données, les processus et l'adoption, plutôt qu'à ajouter des outils.`;
+  }
+  if (level === "Optimizer") {
+    return `Les réponses décrivent ${who} qui dispose déjà de plusieurs fondations. Certaines pratiques sont structurées, mais la maturité demeure inégale selon les dimensions. Le prochain levier n'est pas nécessairement d'ajouter de nouveaux outils. Il consiste d'abord à consolider les processus, les données, la gouvernance et l'adoption afin de tirer davantage de valeur de l'écosystème existant.`;
+  }
+  return `Les réponses décrivent ${who} où plusieurs fondations de la transformation RH digitale restent à structurer. Ce résultat est une première lecture, pas un jugement sur les équipes. Le prochain pas utile est de choisir peu de chantiers, dans un ordre réaliste.`;
+}
+
+export function buildDeterministicAnalysis(input: {
+  totalScore: number;
+  level: MaturityLevel;
+  dimensions: DimensionScore[];
+  context?: AssessmentContext;
+  capped?: boolean;
+}) {
+  const average = input.totalScore / (questions.length || 1);
+  const strengths = input.dimensions.filter((dimension) => dimension.average >= 2);
+  const gaps = input.dimensions.filter((dimension) => dimension.level === "Starter");
+  const priorities = selectPriorities(input.dimensions);
+  const who = sectorVocabulary(input.context?.sector);
+
+  const strengthLines = strengths.length
+    ? strengths
+        .map(
+          (dimension) =>
+            `- ${dimension.title} (${dimension.score}/${dimension.maxScore}, niveau ${dimension.level}). Les réponses de cette dimension se situent au moins au niveau Optimizer.`
+        )
+        .join("\n")
+    : "- Aucune dimension n'atteint encore le seuil Optimizer. Le profil reste à structurer; cela ne signifie pas une absence totale de pratiques.";
+
+  const gapLines = gaps.length
+    ? gaps
+        .map(
+          (dimension) =>
+            `- ${dimension.title} (${dimension.score}/${dimension.maxScore}). Cette zone de progression est directement liée au score de la dimension.`
+        )
+        .join("\n")
+    : "- Aucune dimension n'est au niveau Starter. Les écarts, s'il y en a, sont relatifs entre des dimensions déjà engagées.";
+
+  const priorityLines = priorities
+    .map(
+      (priority, index) =>
+        `${index + 1}. ${priority.title} — ${priority.action}\nHorizon : ${priority.horizon} | Impact : ${priority.impact}`
+    )
+    .join("\n\n");
+
+  const capNote = input.capped
+    ? "\n\nLe score global se situe dans la zone Leader, mais au moins deux dimensions critiques (données, processus ou adoption) sont au niveau Starter. Le niveau affiché est donc Optimizer, afin de ne pas présenter une maturité homogène."
+    : "";
+
+  return `Résumé
+${levelReading(input.level, input.context?.sector)}
+
+Score global : ${input.totalScore}/96. Moyenne : ${formatAverage(average)}/3. Niveau : ${input.level}.${capNote}
+
+Cette lecture concerne ${who}. Il s'agit d'une autoévaluation indicative, et non d'un audit.
+
+Forces liées aux dimensions
+${strengthLines}
+
+Zones de progression
+${gapLines}
+
+Trois priorités
+${priorityLines}
+
+Opportunités
+Les usages numériques ou d'IA les plus utiles dépendent d'abord des dimensions les moins matures. Ils méritent d'être approfondis en session, à partir du contexte déclaré${
+    input.context?.currentPriority
+      ? ` (priorité indiquée : ${input.context.currentPriority})`
+      : ""
+  }.
+
+Risques potentiels
+Si les zones de progression restent sans suite, l'organisation pourrait continuer à investir dans des outils dont les processus, les données ou l'adoption limitent la valeur. Ce risque est potentiel; il n'est pas une conséquence mesurée.`;
+}
+
+export function answerLines(answers: Record<string, number>) {
+  return questions
+    .map((question) => {
+      const score = answers[question.id];
+      const option = question.options.find((item) => item.score === score);
+      return `- ${question.question} → ${option ? `${optionLevelLabel(option.score)} — ${option.label}` : "sans réponse"}`;
+    })
+    .join("\n");
+}
 
 export default {
   themes,
   questions,
+  contextQuestions,
   calculateThemeScore,
   calculateGlobalScore,
   getMaturityLevel,

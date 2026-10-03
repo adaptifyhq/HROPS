@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       html: `
         <p>Bonjour ${assessment.contactName},</p>
         <p>Voici votre rapport complet concernant votre diagnostic de maturité RH digitale.</p>
-        <p>Nous restons disponibles pour une consultation gratuite.</p>
+        <p>Nous restons disponibles pour une session d'interprétation de vos résultats.</p>
         <br />
-        <p>HROps Consulting</p>
+        <p>HROps Consulting Inc.</p>
       `,
       attachments: [
         {

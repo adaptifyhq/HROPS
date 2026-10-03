@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HROps Consulting – Transformer les RH avec des Solutions Stratégiques",
-  description: "HROps Consulting aide les entreprises à moderniser leur gestion des ressources humaines grâce à des solutions intelligentes, automatisées et centrées sur l’humain.",
+  title: "HROps Consulting Inc. – Conseil en transformation RH & SIRH",
+  description:
+    "HROps Consulting Inc. accompagne les organisations dans l'analyse, la sélection, l'implantation et l'optimisation de leurs solutions RH.",
 };
 
 

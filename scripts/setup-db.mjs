@@ -53,4 +53,6 @@ await sql`
   )
 `;
 
+await sql`ALTER TABLE assessments ADD COLUMN IF NOT EXISTS context jsonb`;
+
 console.log("Neon tables ready: blogs, assessments");

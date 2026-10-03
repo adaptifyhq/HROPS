@@ -12,6 +12,7 @@ export function serializeAssessment(row: AssessmentRow) {
     contactName: row.contactName ?? "",
     email: row.email ?? "",
     pdfUrl: row.pdfUrl ?? "",
+    context: row.context ?? {},
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -22,6 +23,14 @@ export async function createAssessment(input: {
   contactName?: string;
   email?: string;
   answers: Record<string, number>;
+  context?: {
+    organizationSize?: string;
+    sector?: string;
+    hrTeamSize?: string;
+    primarySirh?: string;
+    currentPriority?: string;
+    marketingConsent?: boolean;
+  };
   totalScore: number;
   maturityLevel: string;
   aiAnalysis: string;
@@ -34,6 +43,7 @@ export async function createAssessment(input: {
       contactName: input.contactName ?? "",
       email: input.email ?? "",
       answers: input.answers,
+      context: input.context ?? {},
       totalScore: input.totalScore,
       maturityLevel: input.maturityLevel,
       aiAnalysis: input.aiAnalysis,

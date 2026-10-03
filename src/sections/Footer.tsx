@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import AnimationContainer from "@/components/ui/animation-container";
 import { TextHoverEffect } from "@/components/ui/text-hover-effect";
@@ -22,14 +24,10 @@ const Footer = () => {
                 />
               </div>
               <p className="text-muted-foreground mt-4 text-sm text-start">
-                Avec HROPS,{" "}
-                <span className="text-foreground font-semibold">concevez</span>,{" "}
-                <span className="text-orange-500 font-semibold">optimisez</span>
-                ,{" "}
-                <span className="text-foreground font-semibold">
-                  transformez
-                </span>{" "}
-                votre stratégie RH.
+                HROps Consulting Inc.
+                <span className="mt-2 block">
+                  Conseil en transformation RH & SIRH. Québec, Canada.
+                </span>
               </p>
 
               <span className="mt-4 text-muted-foreground text-sm flex items-center">
@@ -55,26 +53,26 @@ const Footer = () => {
                   <ul className="mt-4 text-sm text-muted-foreground space-y-2">
                     <li>
                       <Link
-                        href="#"
+                        href="/#expertise"
                         className="hover:text-primary transition-all"
                       >
-                        Stratégie RH
+                        Nos expertises
                       </Link>
                     </li>
                     <li>
                       <Link
-                        href="#"
+                        href="/#secteurs"
                         className="hover:text-primary transition-all"
                       >
-                        Gestion des talents
+                        Secteurs
                       </Link>
                     </li>
                     <li>
                       <Link
-                        href="#"
+                        href="/contact"
                         className="hover:text-primary transition-all"
                       >
-                        Développement organisationnel
+                        Discuter de votre projet
                       </Link>
                     </li>
                   </ul>
@@ -146,15 +144,24 @@ const Footer = () => {
                         href="/privacy"
                         className="hover:text-primary transition-all"
                       >
-                        politique de confidentialité
+                        Politique de confidentialité
                       </Link>
+                    </li>
+                    <li>
+                      <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new Event("open-cookie-preferences"))}
+                        className="hover:text-primary transition-all"
+                      >
+                        Gérer mes témoins
+                      </button>
                     </li>
                     <li>
                       <Link
                         href="/terms"
                         className="hover:text-primary transition-all"
                       >
-                        Conditions d'utilisation
+                        Conditions d&apos;utilisation
                       </Link>
                     </li>
                   </ul>
@@ -168,7 +175,7 @@ const Footer = () => {
         <div className="mt-8 border-t border-border/40 pt-4 md:pt-8 md:flex md:items-center md:justify-between w-full">
           <AnimationContainer delay={0.6}>
             <p className="text-sm text-muted-foreground mt-8 md:mt-0">
-              &copy; {new Date().getFullYear()} HROPS INC. All rights reserved.
+              &copy; {new Date().getFullYear()} HROps Consulting Inc. Tous droits réservés. Québec, Canada.
             </p>
           </AnimationContainer>
         </div>

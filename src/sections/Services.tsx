@@ -15,39 +15,43 @@ import AnimationContainer from "@/components/ui/animation-container";
 
 export const projects = [
   {
-    title: "Stratégie et Transformation Digitale RH",
+    title: "Transformation RH & SIRH",
     description:
-      "Nous définissons avec vous la feuille de route de votre transformation RH pour aligner les objectifs business et humains via les solutions digitales.",
+      "Cadrer la transformation, clarifier les priorités et construire une feuille de route réaliste.",
   },
   {
-    title: "Déploiement de Solutions SIRH",
+    title: "Diagnostic et analyse des besoins",
     description:
-      "Mise en place de systèmes d'information RH modernes pour automatiser et fiabiliser vos processus de gestion des talents, paie, formation, etc.",
+      "Évaluer les processus, irritants, données, interfaces et besoins métiers avant de choisir ou de faire évoluer une solution.",
   },
   {
-    title: "Optimisation des Systèmes RH Existants",
+    title: "Sélection de solutions et appels d'offres",
     description:
-      "Audit et amélioration continue de vos outils RH pour un meilleur usage, un meilleur ROI et une expérience collaborateur optimisée.",
+      "Structurer les exigences, comparer les solutions et soutenir la prise de décision en conservant une approche indépendante des éditeurs.",
   },
   {
-    title: "Assistance à Maîtrise d’Ouvrage (AMOA)",
+    title: "Implantation SIRH",
     description:
-      "Accompagnement dans la rédaction des cahiers des charges, la gestion des appels d’offres et le pilotage des projets RH.",
+      "Accompagner la gouvernance, la conception, le paramétrage, les essais, la préparation au déploiement et la stabilisation.",
   },
   {
-    title: "Change Management et Formation",
+    title: "Optimisation et amélioration continue",
     description:
-      "Conduite du changement adaptée à vos équipes RH et managers, avec des plans de communication et formations ciblées.",
+      "Faire évoluer les processus et l'utilisation du SIRH après le déploiement afin d'en maximiser la valeur.",
   },
   {
-    title: "Veille et Conseils en Innovations RH",
+    title: "Conduite du changement",
     description:
-      "Nous vous tenons informés des dernières tendances RH et vous conseillons sur les solutions innovantes à forte valeur ajoutée.",
+      "Préparer les équipes, les gestionnaires et les utilisateurs aux nouvelles façons de travailler.",
   },
 ];
 
 export default function ServicesSection() {
   const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+
+  const consentText =
+    "En m'abonnant, je consens à recevoir les communications et contenus de HROps Consulting Inc. Je peux retirer mon consentement en tout temps.";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -56,34 +60,39 @@ export default function ServicesSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!consent) {
+      toast("Consentement requis", {
+        description: "Cochez la case pour vous abonner aux communications.",
+      });
+      return;
+    }
+
     const res = await fetch("https://api.web3forms.com/submit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        access_key: "fd521eb3-5eb4-46c7-adb8-a1e770826526", 
-        subject: "Nouvelle inscription à la newsletter HROPS",
+        access_key: "fd521eb3-5eb4-46c7-adb8-a1e770826526",
+        subject: "Nouvelle inscription à la newsletter HROps Consulting Inc.",
         email,
+        consent: consentText,
+        consent_at: new Date().toISOString(),
+        source: "site-hrops-newsletter",
       }),
     });
 
     if (res.ok) {
       toast("Merci pour votre inscription !", {
-        description:
-          "Vous recevrez bientôt nos dernières actualités RH.",
+        description: "Vous recevrez les communications de HROps Consulting Inc.",
       });
-      setEmail(""); 
+      setEmail("");
+      setConsent(false);
     } else {
       toast("Erreur lors de l'inscription", {
         description: "Veuillez réessayer plus tard.",
       });
     }
-  };
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("submitted");
   };
 
   return (
@@ -99,19 +108,18 @@ export default function ServicesSection() {
             <button className="relative inline-flex h-12 overflow-hidden rounded-full p-[1px] focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-black">
               <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#FFA726_0%,#FB8C00_50%,#FFA726_100%)]" />
               <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-white dark:bg-neutral-950 px-4 text-sm font-medium text-black dark:text-white backdrop-blur-3xl">
-                Nos Services
+                Nos expertises
               </span>
             </button>
 
             <h2 className="mt-6 text-4xl font-bold text-black dark:text-white md:text-5xl">
-              Transformez vos RH avec des solutions digitales innovantes
+              Un accompagnement de conseil, pas un logiciel
             </h2>
 
             <p className="mx-auto mt-4 max-w-2xl text-base text-neutral-700 dark:text-neutral-300 md:text-lg">
-              Chez HROPS Consulting, nous vous accompagnons dans la
-              digitalisation de vos processus RH pour optimiser la gestion du
-              capital humain et aligner vos objectifs organisationnels avec les
-              exigences du marché moderne.
+              HROps Consulting Inc. accompagne les organisations dans la
+              transformation RH et SIRH, de l&apos;analyse des besoins jusqu&apos;à
+              l&apos;implantation et l&apos;amélioration continue.
             </p>
           </div>
         </AnimationContainer>
@@ -121,9 +129,19 @@ export default function ServicesSection() {
         </AnimationContainer>
 
          <div className="mt-24 max-w-2xl mx-auto">
-      <h2 className="mb-10 sm:mb-20 text-xl text-center sm:text-5xl dark:text-white text-black">
-        Abonnez-vous à notre newsletter
+      <h2 className="mb-6 text-xl text-center sm:text-4xl dark:text-white text-black">
+        Recevez les analyses, nouvelles et contenus de HROps Consulting Inc.
       </h2>
+
+      <label className="mb-6 flex items-start gap-3 text-left text-sm text-neutral-700 dark:text-neutral-300">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="mt-1"
+        />
+        <span>{consentText}</span>
+      </label>
 
       <PlaceholdersAndVanishInput
         onChange={handleChange}
@@ -173,21 +191,15 @@ export default function ServicesSection() {
             />
 
             <h2 className="text-3xl md:text-5xl lg:text-6xl font-heading font-medium !leading-snug">
-              Boostez votre <br />
-              <span className="font-subheading italic">stratégie RH</span> avec
-              le digital
+              Clarifions votre prochain chantier RH & SIRH
             </h2>
             <p className="text-sm md:text-lg text-center text-accent-foreground/80 max-w-2xl mx-auto mt-4">
-              HROPS vous accompagne dans la digitalisation de vos processus RH
-              pour optimiser la performance, renforcer l’engagement
-              collaborateur{" "}
-              <span className="hidden lg:inline">
-                et piloter efficacement votre transformation humaine.
-              </span>
+              HROps Consulting Inc. vous accompagne dans l&apos;analyse, la
+              sélection, l&apos;implantation et l&apos;optimisation de vos solutions RH.
             </p>
 
-            <Link href="#contact" className="mt-8 ">
-              <Button className="pointer" size="lg">Demander une consultation</Button>
+            <Link href="/contact" className="mt-8 ">
+              <Button className="pointer" size="lg">Parler de vos besoins RH & SIRH</Button>
             </Link>
           </div>
         </Container>

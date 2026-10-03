@@ -27,6 +27,14 @@ export const assessments = pgTable("assessments", {
   contactName: text("contact_name").default(""),
   email: text("email").default(""),
   answers: jsonb("answers").$type<Record<string, number>>().notNull(),
+  context: jsonb("context").$type<{
+    organizationSize?: string;
+    sector?: string;
+    hrTeamSize?: string;
+    primarySirh?: string;
+    currentPriority?: string;
+    marketingConsent?: boolean;
+  }>(),
   totalScore: integer("total_score").notNull(),
   maturityLevel: text("maturity_level").notNull(),
   aiAnalysis: text("ai_analysis").notNull(),

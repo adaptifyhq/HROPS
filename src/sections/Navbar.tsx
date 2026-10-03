@@ -27,7 +27,7 @@ export function NavbarDemo({
     { name: "Expertise", link: "/#expertise" },
     { name: "Blog", link: "/blog" },
     { name: "Contact", link: "/contact" },
-    { name: "Diagnostic IA", link: "/assessment" },
+    { name: "Diagnostic", link: "/assessment" },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

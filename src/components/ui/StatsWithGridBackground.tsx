@@ -2,14 +2,13 @@
 import { cn } from "@/lib/utils";
 import {
   IconBriefcase,
-  IconUsersGroup,
-  IconClockBolt,
+  IconBuildingCommunity,
+  IconScale,
 } from "@tabler/icons-react";
 import React from "react";
-import { useId } from "react";
-import { useMemo } from "react";
-
+import { useId, useMemo } from "react";
 import dynamic from "next/dynamic";
+
 const ClientOnlyGrid = dynamic(() => import("./ClientOnlyGrid"), {
   ssr: false,
 });
@@ -17,25 +16,22 @@ const ClientOnlyGrid = dynamic(() => import("./ClientOnlyGrid"), {
 export function StatsWithGridBackground() {
   const items = [
     {
-      title: "Années d'expérience",
+      title: "15+ ans d'expérience RH & SIRH",
       description:
-        "Plus de 10 ans d’expertise dans l’accompagnement RH des entreprises.",
+        "Accompagnement des organisations dans leurs projets RH et SIRH.",
       icon: IconBriefcase,
-      value: "10+",
     },
     {
-      title: "Clients satisfaits",
+      title: "Expertise secteur public, municipal et privé",
       description:
-        "Plus de 100 000 utilisateurs ont bénéficié de nos solutions RH.",
-      icon: IconUsersGroup,
-      value: "100k+",
+        "Municipalités, organismes publics, parapublic et entreprises privées.",
+      icon: IconBuildingCommunity,
     },
     {
-      title: "Disponibilité & réactivité",
+      title: "Accompagnement indépendant des éditeurs SIRH",
       description:
-        "Une équipe toujours disponible pour répondre à vos besoins.",
-      icon: IconClockBolt,
-      value: "100%",
+        "Conseil sans lien avec un éditeur, de l'analyse des besoins au déploiement.",
+      icon: IconScale,
     },
   ];
 
@@ -45,25 +41,24 @@ export function StatsWithGridBackground() {
         <div className="grid grid-cols-1 md:grid-cols-3">
           {items.map((item, index) => (
             <div
-              key={"card" + index}
+              key={item.title}
               className={cn(
-                "group/card relative overflow-hidden p-10",
+                "group/card relative overflow-hidden p-10 text-left",
                 index !== items.length - 1 &&
                   "border-b border-neutral-200 dark:border-neutral-800 md:border-b-0 md:border-r"
               )}
             >
               <ClientOnlyGrid size={20} />
               <EdgeElement />
-
               <div className="flex items-center gap-2">
                 <IconContainer>
                   <item.icon className="text-white" />
                 </IconContainer>
-                <p className="text-3xl font-bold text-neutral-700 dark:text-neutral-200">
-                  {item.value}
-                </p>
               </div>
-              <p className="text-balance text-balance mt-4 text-base text-neutral-600 dark:text-neutral-300">
+              <p className="mt-4 text-xl font-semibold text-neutral-800 dark:text-neutral-100">
+                {item.title}
+              </p>
+              <p className="mt-3 text-base text-neutral-600 dark:text-neutral-300">
                 {item.description}
               </p>
             </div>
@@ -81,6 +76,7 @@ const EdgeElement = () => {
     </div>
   );
 };
+
 const IconContainer = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-b from-neutral-200 to-white to-[50%] p-1 dark:from-neutral-800 dark:to-black">
@@ -125,6 +121,7 @@ export const Grid = ({
     </div>
   );
 };
+
 export function GridPattern({
   width,
   height,
@@ -155,25 +152,20 @@ export function GridPattern({
           <path d={`M.5 ${height}V.5H${width}`} fill="none" />
         </pattern>
       </defs>
-      <rect
-        width="100%"
-        height="100%"
-        strokeWidth={0}
-        fill={`url(#${patternId})`}
-      />
+      <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${patternId})`} />
       {squares && (
-         <svg className="overflow-visible">
-         {squares.map(([x, y], index) => (
-           <rect
-             key={`${x}-${y}-${index}`}
-             x={x}
-             y={y}
-             width={21}
-             height={21}
-             strokeWidth={0}
-           />
-         ))}
-       </svg>
+        <svg className="overflow-visible">
+          {squares.map(([sx, sy], index) => (
+            <rect
+              key={`${sx}-${sy}-${index}`}
+              x={sx}
+              y={sy}
+              width={21}
+              height={21}
+              strokeWidth={0}
+            />
+          ))}
+        </svg>
       )}
     </svg>
   );

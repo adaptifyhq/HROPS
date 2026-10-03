@@ -57,7 +57,7 @@ const Hero = () => {
                 <span className="px-2 py-[0.5px] h-[18px] tracking-wide flex items-center justify-center rounded-full bg-gradient-to-r from-orange-400 to-orange-600 text-[9px] font-medium mr-2 text-white">
                   ACTUALITÉ
                 </span>
-                Découvrez nos dernières solutions RH
+                Conseil indépendant en transformation RH & SIRH
               </span>
             </button>
           </Container>
@@ -66,9 +66,9 @@ const Hero = () => {
           <AnimationContainer delay={0.3}>
             <Container delay={0.15}>
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-center !leading-tight max-w-5xl mx-auto text-neutral-900 dark:text-white">
-                Votre partenaire&nbsp;unique pour{" "}
+                Votre partenaire indépendant en{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-yellow-400">
-                  solutions RH
+                  transformation RH & SIRH
                 </span>
               </h1>
             </Container>
@@ -77,20 +77,24 @@ const Hero = () => {
           {/* Subtext */}
           <Container delay={0.2}>
             <p className="max-w-xl mx-auto mt-2 text-base lg:text-lg text-center text-muted-foreground text-neutral-600 dark:text-muted-foreground">
-              Des solutions RH innovantes pour optimiser vos processus,
-              fidéliser vos talents et accompagner la croissance de votre
-              entreprise.
+              Nous accompagnons les organisations dans l&apos;analyse, la sélection,
+              l&apos;implantation et l&apos;optimisation de leurs solutions RH, de la
+              définition des besoins jusqu&apos;au déploiement et à l&apos;amélioration
+              continue.
             </p>
           </Container>
 
           {/* CTA */}
           <Container delay={0.25} className="z-20">
             <div className="flex items-center justify-center mt-6 gap-x-4">
-              <Link href="#" className="flex items-center gap-2 group">
+              <Link href="/contact" className="flex items-center gap-2 group">
                 <Button size="lg">
-                  Essayez notre service
+                  Discuter de votre projet
                   <ArrowRightIcon className="size-4 group-hover:translate-x-1 transition-all duration-300" />
                 </Button>
+              </Link>
+              <Link href="/#expertise" className="text-sm font-medium underline underline-offset-4">
+                Découvrir nos expertises
               </Link>
             </div>
           </Container>

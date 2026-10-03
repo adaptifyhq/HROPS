@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Toaster } from "@/components/ui/sonner";
 import Footer from "@/sections/Footer";
+import CookiePreferences from "@/components/global/CookiePreferences";
 import { usePathname } from "next/navigation";
 import { useRef } from "react";
 import LogoIntro from "@/components/ui/LogoIntro";
@@ -34,6 +35,7 @@ export default function ClientLayoutWrapper({
       {children}
 
       <Toaster position="top-right" richColors closeButton />
+      {!isAdminRoute && !isPdfRoute && <CookiePreferences />}
       {!isAdminRoute && !isPdfRoute && <Footer />}
     </ThemeProvider>
   );

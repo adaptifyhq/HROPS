@@ -134,12 +134,14 @@ function Dashboard() {
         value: String(blogs.length),
         hint: blogs.length === 0 ? "Bibliothèque vide" : "Sur le blog HROps",
         icon: IconFileText,
+        href: "",
       },
       {
         label: "Ce mois-ci",
         value: String(thisMonth),
         hint: thisMonth === 0 ? "Aucun nouvel article" : "Publications du mois",
         icon: IconCalendarMonth,
+        href: "",
       },
       {
         label: "Diagnostics RH",
@@ -147,8 +149,9 @@ function Dashboard() {
         hint:
           leads.length === 0
             ? "Aucun diagnostic reçu"
-            : "Leads enregistrés",
+            : "Voir les leads",
         icon: IconChecklist,
+        href: "/admin/leads",
       },
       {
         label: "Dernière publication",
@@ -156,6 +159,7 @@ function Dashboard() {
         hint: latest ? "Article le plus récent" : "En attente du premier texte",
         icon: IconClockHour4,
         compact: Boolean(latest),
+        href: "",
       },
     ];
   }, [leads.length, blogs]);
@@ -209,31 +213,39 @@ function Dashboard() {
         ) : (
           <>
             <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {stats.map((stat) => (
-                <article
-                  key={stat.label}
-                  className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs text-neutral-500">{stat.label}</p>
-                      <p
-                        className={cn(
-                          "mt-2 font-semibold",
-                          stat.compact ? "text-base" : "text-2xl"
-                        )}
-                      >
-                        {stat.value}
-                      </p>
+              {stats.map((stat) => {
+                const card = (
+                  <>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs text-neutral-500">{stat.label}</p>
+                        <p
+                          className={cn(
+                            "mt-2 font-semibold",
+                            stat.compact ? "text-base" : "text-2xl"
+                          )}
+                        >
+                          {stat.value}
+                        </p>
+                      </div>
+                      <stat.icon className="h-5 w-5 text-neutral-400" />
                     </div>
-                    <stat.icon className="h-5 w-5 text-neutral-400" />
-                  </div>
-                  <p className="mt-2 text-sm text-neutral-500">{stat.hint}</p>
-                </article>
-              ))}
+                    <p className="mt-2 text-sm text-neutral-500">{stat.hint}</p>
+                  </>
+                );
+                const className =
+                  "rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900";
+                return stat.href ? (
+                  <Link key={stat.label} href={stat.href} className={className}>
+                    {card}
+                  </Link>
+                ) : (
+                  <article key={stat.label} className={className}>
+                    {card}
+                  </article>
+                );
+              })}
             </section>
-
-            <LeadsTable leads={leads} />
 
             {!blogs.length ? (
               <EmptyBlogState />
@@ -349,87 +361,6 @@ function Dashboard() {
         )}
       </div>
     </main>
-  );
-}
-
-function cell(value?: string) {
-  const text = value?.trim();
-  return text ? text : "—";
-}
-
-function LeadsTable({ leads }: { leads: AssessmentLead[] }) {
-  return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-lg font-semibold">Diagnostics reçus</h2>
-        <p className="text-sm text-neutral-500">
-          {leads.length === 0
-            ? "Les coordonnées apparaissent ici dès qu’un diagnostic est envoyé."
-            : `${leads.length} lead${leads.length > 1 ? "s" : ""}`}
-        </p>
-      </div>
-
-      {leads.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-neutral-300 px-6 py-10 text-center text-sm text-neutral-500 dark:border-white/15">
-          Aucun lead pour le moment.
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200 dark:border-neutral-800">
-          <table className="w-full min-w-[880px] text-left text-sm">
-            <thead className="bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500 dark:bg-neutral-900">
-              <tr>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium">Organisation</th>
-                <th className="px-4 py-3 font-medium">Contact</th>
-                <th className="px-4 py-3 font-medium">Courriel</th>
-                <th className="px-4 py-3 font-medium">Secteur</th>
-                <th className="px-4 py-3 font-medium">Taille</th>
-                <th className="px-4 py-3 font-medium">Score</th>
-                <th className="px-4 py-3 font-medium">Niveau</th>
-                <th className="px-4 py-3 font-medium">Infolettre</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((lead) => (
-                <tr
-                  key={lead._id}
-                  className="border-t border-neutral-200 dark:border-neutral-800"
-                >
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {formatDate(lead.createdAt)}
-                  </td>
-                  <td className="px-4 py-3">{cell(lead.companyName)}</td>
-                  <td className="px-4 py-3">{cell(lead.contactName)}</td>
-                  <td className="px-4 py-3">
-                    {lead.email?.trim() ? (
-                      <a
-                        href={`mailto:${lead.email}`}
-                        className="underline underline-offset-2"
-                      >
-                        {lead.email}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="px-4 py-3">{cell(lead.context?.sector)}</td>
-                  <td className="px-4 py-3">
-                    {cell(lead.context?.organizationSize)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {lead.totalScore}/96
-                  </td>
-                  <td className="px-4 py-3">{cell(lead.maturityLevel)}</td>
-                  <td className="px-4 py-3">
-                    {lead.context?.marketingConsent ? "Oui" : "Non"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
   );
 }
 

@@ -1,5 +1,5 @@
 import * as React from "react"
-import { EditorContent, EditorContext, ReactNodeViewRenderer, useEditor } from "@tiptap/react"
+import { EditorContent, EditorContext, ReactNodeViewRenderer, useEditor, type Editor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
@@ -69,7 +69,7 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility"
 import { ThemeToggle } from "@/components/tiptap//tiptap-templates/simple/theme-toggle"
 
 // --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
+import { convertFileToBase64, handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 
 
 import "./simple-editor.scss";
@@ -176,6 +176,37 @@ const MobileToolbarContent = ({
   </>
 )
 
+type ContextMenuState = {
+  x: number
+  y: number
+  imagePos: number | null
+}
+
+function imageFromContextEvent(editor: Editor, event: React.MouseEvent) {
+  const target = event.target
+  if (!(target instanceof Element)) return null
+  const wrapper = target.closest(".blog-image")
+  if (!wrapper) return null
+
+  try {
+    const pos = editor.view.posAtDOM(wrapper, 0)
+    const direct = editor.state.doc.nodeAt(pos)
+    if (direct?.type.name === "image") return { pos, node: direct }
+
+    const $pos = editor.state.doc.resolve(Math.min(pos, editor.state.doc.content.size))
+    const after = $pos.nodeAfter
+    if (after?.type.name === "image") return { pos: $pos.pos, node: after }
+    const before = $pos.nodeBefore
+    if (before?.type.name === "image") {
+      return { pos: $pos.pos - before.nodeSize, node: before }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
 type SimpleEditorProps = {
   content: string;
   onChange: (value: string) => void;
@@ -189,6 +220,144 @@ export function SimpleEditor({ content, onChange, header }: SimpleEditorProps) {
     "main" | "highlighter" | "link"
   >("main")
   const toolbarRef = React.useRef<HTMLDivElement>(null)
+  const [contextMenu, setContextMenu] = React.useState<ContextMenuState | null>(null)
+
+  function closeContextMenu() {
+    setContextMenu(null)
+  }
+
+  function openContextMenu(event: React.MouseEvent) {
+    if (!editor) return
+    event.preventDefault()
+
+    const image = imageFromContextEvent(editor, event)
+    if (!image) {
+      const coords = editor.view.posAtCoords({
+        left: event.clientX,
+        top: event.clientY,
+      })
+      if (coords) {
+        const { from, to } = editor.state.selection
+        if (coords.pos < from || coords.pos > to) {
+          editor.commands.setTextSelection(coords.pos)
+        }
+      }
+    }
+
+    const menuWidth = 160
+    const menuHeight = 132
+    setContextMenu({
+      x: Math.min(event.clientX, window.innerWidth - menuWidth - 8),
+      y: Math.min(event.clientY, window.innerHeight - menuHeight - 8),
+      imagePos: image?.pos ?? null,
+    })
+  }
+
+  async function copyFromEditor() {
+    if (!editor) return
+    const imagePos = contextMenu?.imagePos
+    closeContextMenu()
+
+    if (imagePos != null) {
+      const node = editor.state.doc.nodeAt(imagePos)
+      const src = node?.attrs?.src
+      if (typeof src === "string" && src) {
+        try {
+          const response = await fetch(src)
+          const blob = await response.blob()
+          await navigator.clipboard.write([
+            new ClipboardItem({ [blob.type || "image/png"]: blob }),
+          ])
+          return
+        } catch {
+          await navigator.clipboard.writeText(src)
+          return
+        }
+      }
+    }
+
+    const { from, to, empty } = editor.state.selection
+    const text = empty
+      ? ""
+      : editor.state.doc.textBetween(from, to, "\n")
+    if (text) await navigator.clipboard.writeText(text)
+  }
+
+  async function pasteIntoEditor() {
+    if (!editor) return
+    const imagePos = contextMenu?.imagePos
+    closeContextMenu()
+    if (imagePos != null) {
+      editor.commands.setTextSelection(imagePos + 1)
+    } else {
+      editor.commands.focus()
+    }
+
+    try {
+      const items = await navigator.clipboard.read()
+      for (const item of items) {
+        const imageType = item.types.find((type) => type.startsWith("image/"))
+        if (!imageType) continue
+        const blob = await item.getType(imageType)
+        const file = new File([blob], "image", { type: imageType })
+        const src = await convertFileToBase64(file)
+        editor.chain().focus().insertContent({ type: "image", attrs: { src } }).run()
+        return
+      }
+    } catch {
+      // Fall back to plain text when image clipboard access is blocked.
+    }
+
+    try {
+      const text = await navigator.clipboard.readText()
+      if (text) editor.chain().focus().insertContent(text).run()
+    } catch (error) {
+      console.error("Paste failed:", error)
+    }
+  }
+
+  function deleteFromEditor() {
+    if (!editor) return
+    const imagePos = contextMenu?.imagePos
+    closeContextMenu()
+
+    if (imagePos != null) {
+      const node = editor.state.doc.nodeAt(imagePos)
+      if (node) {
+        editor
+          .chain()
+          .focus()
+          .deleteRange({ from: imagePos, to: imagePos + node.nodeSize })
+          .run()
+        return
+      }
+    }
+
+    editor.chain().focus().deleteSelection().run()
+  }
+
+  React.useEffect(() => {
+    if (!contextMenu) return
+    const close = () => setContextMenu(null)
+    const onPointer = (event: MouseEvent) => {
+      const target = event.target
+      if (target instanceof Element && target.closest(".editor-context-menu")) return
+      setContextMenu(null)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setContextMenu(null)
+    }
+    window.addEventListener("scroll", close, true)
+    window.addEventListener("resize", close)
+    window.addEventListener("mousedown", onPointer)
+    window.addEventListener("keydown", onKey)
+    return () => {
+      window.removeEventListener("scroll", close, true)
+      window.removeEventListener("resize", close)
+      window.removeEventListener("mousedown", onPointer)
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [contextMenu])
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -262,6 +431,7 @@ export function SimpleEditor({ content, onChange, header }: SimpleEditorProps) {
             <div
               className="article-write-box"
               onClick={() => editor?.chain().focus().run()}
+              onContextMenu={openContextMenu}
             >
               <Toolbar
                 ref={toolbarRef}
@@ -292,6 +462,24 @@ export function SimpleEditor({ content, onChange, header }: SimpleEditorProps) {
                 aria-label="Texte de l’article"
                 className="simple-editor-content"
               />
+              {contextMenu && (
+                <div
+                  className="editor-context-menu"
+                  style={{ top: contextMenu.y, left: contextMenu.x }}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onContextMenu={(event) => event.preventDefault()}
+                >
+                  <button type="button" onClick={copyFromEditor}>
+                    Copier
+                  </button>
+                  <button type="button" onClick={pasteIntoEditor}>
+                    Coller
+                  </button>
+                  <button type="button" onClick={deleteFromEditor}>
+                    Supprimer
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

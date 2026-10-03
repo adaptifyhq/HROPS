@@ -145,6 +145,48 @@ body,
   background: #171717;
 }
 
+.editor-context-menu {
+  position: fixed;
+  z-index: 80;
+  min-width: 9.5rem;
+  padding: 0.35rem;
+  border: 1px solid #d4d4d4;
+  border-radius: 0.6rem;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.editor-context-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: #171717;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.editor-context-menu button:hover {
+  background: #f5f5f5;
+}
+
+.dark .editor-context-menu {
+  border-color: #404040;
+  background: #171717;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.dark .editor-context-menu button {
+  color: #f5f5f5;
+}
+
+.dark .editor-context-menu button:hover {
+  background: #262626;
+}
+
 .article-write-box:focus-within {
   border-color: #737373;
 }

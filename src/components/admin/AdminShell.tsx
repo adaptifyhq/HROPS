@@ -9,6 +9,7 @@ import {
   IconArticle,
   IconHome,
   IconLogout,
+  IconUsers,
   IconMoon,
   IconPlus,
   IconSun,
@@ -35,6 +36,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       href: "/admin",
       icon: <IconHome className="h-5 w-5" />,
       active: pathname === "/admin",
+    },
+    {
+      id: "leads",
+      label: "Leads",
+      href: "/admin/leads",
+      icon: <IconUsers className="h-5 w-5" />,
+      active: pathname?.startsWith("/admin/leads"),
     },
     {
       id: "create",
